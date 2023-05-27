@@ -3,7 +3,7 @@ import { socket } from './socket';
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([[], [], [], []]);
   /**
    *  [
    *     {
@@ -36,11 +36,18 @@ const App = () => {
       setMessages((messages) => messages.filter((message) => message.uuid !== uuid));
     }
 
+    function onLogMessage(currColumn) {
+      console.log('NEW COLUMN', currColumn)
+    }
+
+
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('add-task', onReceiveMessage);
     socket.on('delete-task', onDeleteMessage);
+    socket.on('next-column', onLogMessage);
+
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -49,8 +56,14 @@ const App = () => {
       socket.off('disconnect', onDisconnect);
       socket.off('add-task', onReceiveMessage);
       socket.off('delete-task', onDeleteMessage);
+      socket.off('next-column', onLogMessage);
     };
   }, []);
+
+
+  function logMessage(e) {
+    socket.emit('next-column', e);
+  }
 
   function handleClick() {
     socket.emit('add-task', input);
@@ -72,8 +85,10 @@ const App = () => {
       <ul>
         {messages.map((message, index) => (
           <li key={index}>
+            {console.log(message)}
             {message.content}
             <button onClick={() => handleDelete(message.uuid)}>x</button>
+            <button onClick={() => logMessage(message.currColumn)}>Next</button>
           </li>
         ))}
       </ul>
