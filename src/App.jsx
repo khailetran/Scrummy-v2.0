@@ -3,7 +3,7 @@ import { socket } from './socket';
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const [messages, setMessages] = useState([[], [], [], []]);
+  const [tasks, setTasks] = useState([]);
   /**
    *  [
    *     {
@@ -27,43 +27,37 @@ const App = () => {
       setIsConnected(false);
     }
 
-    function onReceiveMessage(newMessage) {
-      console.log('onReceiveMessage', newMessage);
-      setMessages((messages) => [...messages, newMessage]);
+    function onReceiveTask(newTask) {
+      console.log('STORAGE from onReceiveTask', newTask[0]);
+      setTasks((tasks) => [...tasks, newTask[0]]);
     }
 
-    function onDeleteMessage(uuid) {
-      setMessages((messages) => messages.filter((message) => message.uuid !== uuid));
+    function onDeleteTask(uuid) {
+      console.log("UPDATED STORAGE after deleting", uuid)
+      setTasks((tasks) => tasks.filter((task) => task.uuid !== uuid[0].uuid));
     }
 
-    function onLogMessage(currColumn) {
-      console.log('NEW COLUMN', currColumn)
-    }
-
+    // function onNext(storage){
+    //   console.log("onNEXT", storage)
+    // }
 
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('add-task', onReceiveMessage);
-    socket.on('delete-task', onDeleteMessage);
-    socket.on('next-column', onLogMessage);
-
+    socket.on('add-task', onReceiveTask);
+    socket.on('delete-task', onDeleteTask);
+    // socket.on('next', onNext);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('add-task', onReceiveMessage);
-      socket.off('delete-task', onDeleteMessage);
-      socket.off('next-column', onLogMessage);
+      socket.off('add-task', onReceiveTask);
+      socket.off('delete-task', onDeleteTask);
+      // socket.off('next', onNext);
     };
   }, []);
-
-
-  function logMessage(e) {
-    socket.emit('next-column', e);
-  }
 
   function handleClick() {
     socket.emit('add-task', input);
@@ -72,6 +66,10 @@ const App = () => {
   function handleDelete(uuid) {
     socket.emit('delete-task', uuid);
   }
+
+  // function handleNext() {
+  //   socket.emit('next')
+  // }
 
   return (
     <>
@@ -83,12 +81,11 @@ const App = () => {
       />
       <button onClick={handleClick}>BUTTON</button>
       <ul>
-        {messages.map((message, index) => (
+        {tasks.map((task, index) => (
           <li key={index}>
-            {console.log(message)}
-            {message.content}
-            <button onClick={() => handleDelete(message.uuid)}>x</button>
-            <button onClick={() => logMessage(message.currColumn)}>Next</button>
+            {task.content}
+            <button onClick={() => handleDelete(task.uuid)}>x</button>
+            {/* <button onClick={() => handleNext(task.uuid)}>Next</button> */}
           </li>
         ))}
       </ul>
