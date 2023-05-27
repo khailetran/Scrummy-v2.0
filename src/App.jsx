@@ -1,20 +1,27 @@
 import React, { useState, useEffect } from 'react';
 import { socket } from './socket';
+import styled from 'styled-components';
+
+const Title = styled.div`
+  color: blue;
+  background-color: lightblue;
+  padding: 3em;
+`;
+
+const MOCK_DATA = [
+  [
+    { uuid: 0, author: 'anna', content: 'make styled components work' },
+    { uuid: 1, author: 'scott', content: 'create mock data' },
+  ],
+  [{ uuid: 2, author: 'josh', content: 'make backend' }],
+  [],
+  [{ uuid: 3, author: 'derek', content: 'make backend with josh' }],
+];
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
-  const [messages, setMessages] = useState([]);
-  /**
-   *  [
-   *     {
-   *      uuid: '9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d', <<--- unique id for task
-   *      content: "Finish cleaning the house", <<--- content
-   *      author: "Josh" <<---- socket.id
-   *     }
-   *
-   *
-   *  ]
-   */
+
+  const [tasks, setTasks] = useState(MOCK_DATA);
 
   const [input, setInput] = useState('');
 
@@ -27,28 +34,27 @@ const App = () => {
       setIsConnected(false);
     }
 
-    function onReceiveMessage(newMessage) {
-      console.log('onReceiveMessage', newMessage);
-      setMessages((messages) => [...messages, newMessage]);
+    function onAddTask(newTask) {
+      setTasks((tasks) => [...tasks, newTask]);
     }
 
-    function onDeleteMessage(uuid) {
-      setMessages((messages) => messages.filter((message) => message.uuid !== uuid));
+    function onDeleteTask(uuid) {
+      setTasks((tasks) => tasks.filter((task) => task.uuid !== uuid));
     }
 
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
-    socket.on('add-task', onReceiveMessage);
-    socket.on('delete-task', onDeleteMessage);
+    socket.on('add-task', onAddTask);
+    socket.on('delete-task', onDeleteTask);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
-      socket.off('add-task', onReceiveMessage);
-      socket.off('delete-task', onDeleteMessage);
+      socket.off('add-task', onAddTask);
+      socket.off('delete-task', onDeleteTask);
     };
   }, []);
 
@@ -62,7 +68,7 @@ const App = () => {
 
   return (
     <>
-      <div>App</div>
+      <Title>App</Title>
       <input
         type="text"
         value={input}
@@ -70,10 +76,10 @@ const App = () => {
       />
       <button onClick={handleClick}>BUTTON</button>
       <ul>
-        {messages.map((message, index) => (
+        {tasks.map((task, index) => (
           <li key={index}>
-            {message.content}
-            <button onClick={() => handleDelete(message.uuid)}>x</button>
+            {task.content}
+            <button onClick={() => handleDelete(task.uuid)}>x</button>
           </li>
         ))}
       </ul>
