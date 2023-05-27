@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const path = require('path');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.Server(app);
@@ -17,16 +18,19 @@ app.get('/', (req, res) => res.sendFile(__dirname, '../dist/index.html'));
 io.on('connection', (socket) => {
   console.log(`A client has connected! ${socket.id}`);
 
-  // Sends information to ALL clients that are connects
-  socket.emit('greeting-from-server', {
-    greeting: 'Hello Client',
+  // Listener for the 'greeting-from-client'
+  socket.on('add-task', (content) => {
+    // Assign a unique id for the task
+    // Assign an author for the task
+    io.emit('add-task', {author: socket.id, content, uuid: uuidv4()});
+    // `User ${socket.id} has sent ${content} and its uuid is ${uuidv4()}`);
   });
 
-  // Listener for the 'greeting-from-client'
-  socket.on('greeting-from-client', (message) => {
-    // USER apsdofkasdpofk: "whatever the message was"
-    io.emit('receive-message', `${socket.id} has sent ${message}`);
-  });
+  //Listener for 'delete-message'
+  socket.on('delete-task', (uuid) => {
+    io.emit('delete-task', uuid);
+  })
+
 });
 
 server.listen(3000, () => console.log('The server is running at port 3000'));
