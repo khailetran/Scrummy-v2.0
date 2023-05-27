@@ -9,6 +9,8 @@ const TEMPLATE_FILE = '/src/index.html';
 module.exports = {
   entry: ENTRY_FILE,
 
+  mode: process.env.NODE_ENV || 'production',
+
   output: {
     publicPath: PUBLIC_PATH,
     path: OUTPUT_PATH,
@@ -49,4 +51,10 @@ module.exports = {
       changeOrigin: true,
     },
   },
+
+  performance: {
+    hints: false,
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000
+  }
 };

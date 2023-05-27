@@ -4,8 +4,9 @@
   "description": "Pull request test #1 I added this comment in the Dev branch I added this comment in the Dev branch too",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon server.js",
-    "build": "webpack --mode production",
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js & NODE_ENV=development webpack-dev-server --hot",
+    "build": "webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -15,7 +16,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "socket.io": "^4.6.1",
-    "socket.io-client": "^4.6.1"
+    "socket.io-client": "^4.6.1",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.1",
