@@ -40,64 +40,54 @@ io.on('connection', (socket) => {
   })
 
   //Listener for 'next'
-  // socket.on('next', (uuid) => {
+  socket.on('next', (uuid) => {
+    let foundTask = null;
+    let foundColumnIndex;
+    // find the task with the matching UUID and its current column index
+    for (let i = 0; i < storage.length; i++) {
+      // store current column 
+      const column = storage[i];
+      // store index if uuid is found
+      const taskIndex = column.findIndex((task) => task.uuid === uuid);
+      // if match was found and not in the last column...
+      if (taskIndex !== -1 && i !== storage.length - 1) {
+        // remove the task at the specified index from the column array
+        foundTask = column.splice(taskIndex, 1)[0];
+        foundColumnIndex = i;
+        break;
+      }
+    }
+    if (foundTask !== null) {
+      // push foundTask into next column in storage
+      storage[foundColumnIndex + 1].push(foundTask);
+    }
+    io.emit('next', [{ uuid: uuid, storage: storage }]);
+  })
 
-
-  // })
-
+  //Listener for 'previous'
+  socket.on('previous', (uuid) => {
+    let foundTask = null;
+    let foundColumnIndex;
+    // find the task with the matching UUID and its current column index
+    for (let i = 0; i < storage.length; i++) {
+      // store current column 
+      const column = storage[i];
+      // store index if uuid is found
+      const taskIndex = column.findIndex((task) => task.uuid === uuid);
+      // if match was found and not in the first column...store result and column index
+      if (taskIndex !== -1 && i !== 0) {
+        // remove the task at the specified index from the column array
+        foundTask = column.splice(taskIndex, 1)[0];
+        foundColumnIndex = i;
+        break;
+      }
+    }
+    if (foundTask !== null) {
+      // push foundTask into previous column in storage
+      storage[foundColumnIndex - 1].push(foundTask);
+    }
+    io.emit('next', [{ uuid: uuid, storage: storage }]);
+  })
 });
-
-
-
-
-
-
-
-
-
-// io.on('connection', (socket) => {
-//   console.log(`A client has connected! ${socket.id}`);
-
-//   // Listener for the 'greeting-from-client'
-//   socket.on('add-task', (content) => {
-//     // Assign a unique id for the task
-//     // Assign an author for the task
-//     io.emit('add-task', {
-//       author: socket.id,
-//       content: [[content], [], [], []],
-//       uuid: uuidv4(),
-//       currColumn: 0,
-//     });
-//     // `User ${socket.id} has sent ${content} and its uuid is ${uuidv4()}`);
-//   });
-
-//   //Listener for 'delete-message'
-//   socket.on('delete-task', (uuid) => {
-//     io.emit('delete-task', uuid);
-//   });
-
-//   //Listener for 'right arrow'
-//   socket.on('next-column', (currColumn) => {
-//     if (currColumn <= 3) {
-//       io.emit('next-column', {
-//         currColumn: currColumn + 1,
-//       });
-//     }
-//   });
-
-//   //Listener for 'left arrow'
-//   socket.on('previous-column', (author, content, uuid, currColumn) => {
-//     if (currColumn === 0) {
-//       Error('Cannot move column');
-//     } else {
-//       io.emit('previous-column', {
-//         author,
-//         content,
-//         uuid,
-//         currColumn: currColumn - 1,
-//       });
-//     }
-//   });
-// });
 
 server.listen(3000, () => console.log('The server is running at port 3000'));

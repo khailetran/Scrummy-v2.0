@@ -32,21 +32,26 @@ const App = () => {
       setTasks((tasks) => [...tasks, newTask[0]]);
     }
 
-    function onDeleteTask(uuid) {
-      console.log("UPDATED STORAGE after deleting", uuid)
-      setTasks((tasks) => tasks.filter((task) => task.uuid !== uuid[0].uuid));
+    function onDeleteTask(obj) {
+      console.log("UPDATED STORAGE after deleting", obj[0])
+      setTasks((tasks) => tasks.filter((task) => task.uuid !== obj[0].uuid));
     }
 
-    // function onNext(storage){
-    //   console.log("onNEXT", storage)
-    // }
+    function onNext(storage){
+      console.log("UPDATED STORAGE after clicking next", storage[0])
+    }
+
+    function onPrevious(storage){
+      console.log("UPDATED STORAGE after clicking previous", storage[0])
+    }
 
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('add-task', onReceiveTask);
     socket.on('delete-task', onDeleteTask);
-    // socket.on('next', onNext);
+    socket.on('next', onNext);
+    socket.on('previous', onPrevious);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -55,7 +60,8 @@ const App = () => {
       socket.off('disconnect', onDisconnect);
       socket.off('add-task', onReceiveTask);
       socket.off('delete-task', onDeleteTask);
-      // socket.off('next', onNext);
+      socket.off('next', onNext);
+      socket.off('previous', onPrevious);
     };
   }, []);
 
@@ -67,9 +73,13 @@ const App = () => {
     socket.emit('delete-task', uuid);
   }
 
-  // function handleNext() {
-  //   socket.emit('next')
-  // }
+  function handleNext(uuid) {
+    socket.emit('next', uuid)
+  }
+
+  function handlePrevious(uuid) {
+    socket.emit('previous', uuid)
+  }
 
   return (
     <>
@@ -85,7 +95,8 @@ const App = () => {
           <li key={index}>
             {task.content}
             <button onClick={() => handleDelete(task.uuid)}>x</button>
-            {/* <button onClick={() => handleNext(task.uuid)}>Next</button> */}
+            <button onClick={() => handleNext(task.uuid)}>Next</button>
+            <button onClick={() => handlePrevious(task.uuid)}>Previous</button>
           </li>
         ))}
       </ul>
