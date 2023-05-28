@@ -6,7 +6,10 @@ const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = http.Server(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+  pingTimeout: 1000, // how many ms without a pong packet to consider the connection closed
+  pingInterval: 5000 // how many ms before sending a new ping packet
+});
 
 //temp storage to store tasks
 let storage = [[], [], [], []]
@@ -20,6 +23,11 @@ app.get('/', (req, res) => res.sendFile(__dirname, '../dist/index.html'));
 // io refers this server
 io.on('connection', (socket) => {
   console.log(`A client has connected! ${socket.id}`);
+
+  // client disconnection
+  socket.on('disconnect', () => {
+    console.log(`A client has disconnected! ${socket.id}`);
+  });
 
   // Listener for the 'greeting-from-client'
   socket.on('add-task', (content) => {
