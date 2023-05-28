@@ -14,6 +14,46 @@ const io = socketIO(server, {
 //temp storage to store tasks
 let storage = [[], [], [], []]
 
+//list of names
+let anonNames = ['alligator', 'anteater', 'armadillo', 'auroch', 'axolotl', 'badger', 'bat', 'bear', 'beaver',
+  'blobfish', 'buffalo', 'camel', 'chameleon', 'cheetah', 'chipmunk', 'chinchilla', 'chupacabra', 'cormorant',
+  'coyote', 'crow', 'dingo', 'dinosaur', 'dog', 'dolphin', 'dragon', 'duck', 'octopus', 'elephant', 'ferret',
+  'fox', 'frog', 'giraffe', 'goose', 'gopher', 'grizzly', 'hamster', 'hedgehog', 'hippo', 'hyena', 'jackal',
+  'jackalope', 'ibex', 'ifrit', 'iguana', 'kangaroo', 'kiwi', 'koala', 'kraken', 'lemur', 'leopard', 'liger',
+  'lion', 'llama', 'manatee', 'mink', 'monkey', 'moose', 'narwhal', 'nyan cat', 'orangutan', 'otter', 'panda',
+  'penguin', 'platypus', 'python', 'pumpkin', 'quagga', 'quokka', 'rabbit', 'raccoon', 'rhino', 'sheep', 'shrew',
+  'skunk', 'squirrel', 'tiger', 'turtle', 'unicorn', 'walrus', 'wolf', 'wolverine', 'wombat'];
+
+// anon names storage object
+const anonNamesObj = new Map();
+
+// generate unique anon name from anonNames
+const generateUniqueAnonName = () => {
+  let isUnique = false;
+  let anonName;
+
+  while (!isUnique) {
+    // generate a random anonName
+    anonName = anonNames[Math.floor(Math.random() * anonNames.length)];
+
+    // check if the generated anonName is already assigned
+    let isNameAssigned = false;
+    for (const assignedAnonName of anonNamesObj.values()) {
+      if (assignedAnonName === anonName) {
+        isNameAssigned = true;
+        break;
+      }
+    }
+
+    // exit loop if name has not already been assigned
+    if (!isNameAssigned) {
+      isUnique = true;
+    }
+  }
+
+  return anonName;
+};
+
 // Serve static files in the /dist folder
 app.use('/', express.static(path.join(__dirname, '../dist')));
 app.get('/', (req, res) => res.sendFile(__dirname, '../dist/index.html'));
@@ -34,9 +74,22 @@ io.on('connection', (socket) => {
     // Assign a unique id for the task
     // Assign an author for the task
     const uuid = uuidv4();
+
+    let anonName;
+
+    // Check if anonName is already assigned for the current socket.id
+    if (anonNamesObj.has(socket.id)) {
+      anonName = anonNamesObj.get(socket.id);
+    } else {
+      // Generate a random anon name for the current socket.id
+      anonName = generateUniqueAnonName();
+      // Store the anonName for the current socket.id
+      anonNamesObj.set(socket.id, anonName);
+    }
+
     //store it to the first index of storage (TO DO column)
-    storage[0].push({ author: socket.id, content, uuid: uuid });
-    io.emit('add-task', [{ author: socket.id, content, uuid: uuid, storage: storage }]);
+    storage[0].push({ author: socket.id, content, uuid: uuid, anonName: anonName });
+    io.emit('add-task', [{ author: socket.id, content, uuid: uuid, storage: storage, anonName: anonName }]);
     // `User ${socket.id} has sent ${content} and its uuid is ${uuidv4()}`);
   });
 
