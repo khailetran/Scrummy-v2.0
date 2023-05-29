@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { socket } from './socket';
 import styled from 'styled-components';
+import Column from './components/Column';
 
 const Title = styled.div`
   color: blue;
   background-color: lightblue;
   padding: 3em;
 `;
+
+const Board = styled.div`
+  border: 1px solid black;
+  background-color: lightblue;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+`;
+
+const HEADERS = ['TO DO', 'IN PROGRESS', 'COMPLETE', 'DONE'];
 
 const MOCK_DATA = [
   [
@@ -75,14 +85,15 @@ const App = () => {
         onChange={(e) => setInput(e.target.value)}
       />
       <button onClick={handleClick}>BUTTON</button>
-      <ul>
-        {tasks.map((task, index) => (
-          <li key={index}>
-            {task.content}
-            <button onClick={() => handleDelete(task.uuid)}>x</button>
-          </li>
+      <Board>
+        {tasks.map((columnTasks, i) => (
+          <Column
+            key={`col_${i}`}
+            header={HEADERS[i]}
+            columnTasks={columnTasks}
+          />
         ))}
-      </ul>
+      </Board>
     </>
   );
 };
