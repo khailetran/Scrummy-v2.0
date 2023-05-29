@@ -110,10 +110,22 @@ io.on('connection', (socket) => {
       const column = storage[i];
       // store index if uuid is found
       const taskIndex = column.findIndex((task) => task.uuid === uuid);
-      // if match was found and not in the last column...
-      if (taskIndex !== -1 && i !== storage.length - 1) {
+
+      // if match was found and in the 2nd to last column (COMPLETE)...
+      if (taskIndex !== -1 && i === storage.length - 2) {
         // remove the task at the specified index from the column array
         foundTask = column.splice(taskIndex, 1)[0];
+        // create a current reviewer in storage
+        foundTask.reviewedBy = anonNamesObj.get(socket.id);
+        foundColumnIndex = i;
+        break;
+      }
+      // if match was found and not in the last column...
+      else if (taskIndex !== -1 && i !== storage.length - 1) {
+        // remove the task at the specified index from the column array
+        foundTask = column.splice(taskIndex, 1)[0];
+        console.log('FOUND TASK', foundTask)
+        console.log('ANON OBJ', anonNamesObj)
         foundColumnIndex = i;
         break;
       }
@@ -135,8 +147,18 @@ io.on('connection', (socket) => {
       const column = storage[i];
       // store index if uuid is found
       const taskIndex = column.findIndex((task) => task.uuid === uuid);
+
+      // if match was found and in the last column (REVIEWED)...
+      if (taskIndex !== -1 && i == storage.length - 1) {
+        // remove the task at the specified index from the column array
+        foundTask = column.splice(taskIndex, 1)[0];
+        // delete the reviewer
+        delete foundTask.reviewedBy;
+        foundColumnIndex = i;
+        break;
+      }
       // if match was found and not in the first column...store result and column index
-      if (taskIndex !== -1 && i !== 0) {
+      else if (taskIndex !== -1 && i !== 0) {
         // remove the task at the specified index from the column array
         foundTask = column.splice(taskIndex, 1)[0];
         foundColumnIndex = i;
@@ -147,7 +169,7 @@ io.on('connection', (socket) => {
       // push foundTask into previous column in storage
       storage[foundColumnIndex - 1].push(foundTask);
     }
-    io.emit('next', [{ uuid: uuid, storage: storage }]);
+    io.emit('previous', [{ uuid: uuid, storage: storage }]);
   })
 });
 
