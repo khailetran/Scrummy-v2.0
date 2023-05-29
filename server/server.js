@@ -62,35 +62,35 @@ app.get('/', (req, res) => res.sendFile(__dirname, '../dist/index.html'));
 // socket refers to the client
 // io refers this server
 io.on('connection', (socket) => {
-  console.log(`A client has connected! ${socket.id}`);
+  // Create anonName upon client connection and store anonName in anonNamesObj
+  let anonName;
+  // Check if anonName is already assigned for the current socket.id
+  if (anonNamesObj.has(socket.id)) {
+    anonName = anonNamesObj.get(socket.id);
+  } else {
+    // Generate a random anon name for the current socket.id
+    anonName = generateUniqueAnonName();
+    // Store the anonName for the current socket.id
+    anonNamesObj.set(socket.id, anonName);
+  }
+  console.log(`A client has connected ${socket.id} with ANON-NAME:`, anonName)
+  console.log(`Current anonNamesList`, anonNamesObj)
 
   // client disconnection
   socket.on('disconnect', () => {
-    console.log(`A client has disconnected! ${socket.id}`);
+    anonNamesObj.delete(socket.id)
+    console.log(`A client has disconnected ${socket.id} with UPDATED anonNamesList`, anonNamesObj);
   });
 
   // Listener for the 'greeting-from-client'
   socket.on('add-task', (content) => {
     // Assign a unique id for the task
-    // Assign an author for the task
     const uuid = uuidv4();
-
-    let anonName;
-
-    // Check if anonName is already assigned for the current socket.id
-    if (anonNamesObj.has(socket.id)) {
-      anonName = anonNamesObj.get(socket.id);
-    } else {
-      // Generate a random anon name for the current socket.id
-      anonName = generateUniqueAnonName();
-      // Store the anonName for the current socket.id
-      anonNamesObj.set(socket.id, anonName);
-    }
 
     //store it to the first index of storage (TO DO column)
     storage[0].push({ author: socket.id, content, uuid: uuid, anonName: anonName });
     io.emit('add-task', [{ author: socket.id, content, uuid: uuid, storage: storage, anonName: anonName }]);
-    // `User ${socket.id} has sent ${content} and its uuid is ${uuidv4()}`);
+    // `User ${ socket.id } has sent ${ content } and its uuid is ${ uuidv4() } `);
   });
 
   //Listener for 'delete-message'
@@ -124,8 +124,6 @@ io.on('connection', (socket) => {
       else if (taskIndex !== -1 && i !== storage.length - 1) {
         // remove the task at the specified index from the column array
         foundTask = column.splice(taskIndex, 1)[0];
-        console.log('FOUND TASK', foundTask)
-        console.log('ANON OBJ', anonNamesObj)
         foundColumnIndex = i;
         break;
       }
