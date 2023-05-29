@@ -11,10 +11,10 @@ const io = socketIO(server, {
   pingInterval: 5000 // how many ms before sending a new ping packet
 });
 
-//temp storage to store tasks
+// temp storage to store tasks
 let storage = [[], [], [], []]
 
-//list of names
+// list of names
 let anonNames = ['alligator', 'anteater', 'armadillo', 'auroch', 'axolotl', 'badger', 'bat', 'bear', 'beaver',
   'blobfish', 'buffalo', 'camel', 'chameleon', 'cheetah', 'chipmunk', 'chinchilla', 'chupacabra', 'cormorant',
   'coyote', 'crow', 'dingo', 'dinosaur', 'dog', 'dolphin', 'dragon', 'duck', 'octopus', 'elephant', 'ferret',
@@ -26,6 +26,8 @@ let anonNames = ['alligator', 'anteater', 'armadillo', 'auroch', 'axolotl', 'bad
 
 // anon names storage object
 const anonNamesObj = new Map();
+// anon names storage array for frontend
+let anonNamesArr = [];
 
 // generate unique anon name from anonNames
 const generateUniqueAnonName = () => {
@@ -70,16 +72,26 @@ io.on('connection', (socket) => {
   } else {
     // Generate a random anon name for the current socket.id
     anonName = generateUniqueAnonName();
-    // Store the anonName for the current socket.id
+    // Store anonName in anonNameObj
     anonNamesObj.set(socket.id, anonName);
+    // Store anonName in anonNameArr
+    anonNamesArr.push(anonName);
   }
-  console.log(`A client has connected ${socket.id} with ANON-NAME:`, anonName)
-  console.log(`Current anonNamesList`, anonNamesObj)
+  // emit current online users to frontend 
+  io.emit('current-online', anonNamesArr);
+  console.log(`A client has connected ${socket.id} with ANON-NAME:`, anonName);
+  console.log(`Current anonNamesListObj`, anonNamesObj);
+  console.log(`Current anonNamesListArr`, anonNamesArr);
+
 
   // client disconnection
   socket.on('disconnect', () => {
+    anonNamesArr = anonNamesArr.filter(e => e !== anonNamesObj.get(socket.id));
     anonNamesObj.delete(socket.id)
+    // emit current online users to frontend
+    io.emit('current-online', anonNamesArr);
     console.log(`A client has disconnected ${socket.id} with UPDATED anonNamesList`, anonNamesObj);
+    console.log(`A client has disconnected ${socket.id} with UPDATED anonNamesArr`, anonNamesArr);
   });
 
   // Listener for the 'greeting-from-client'

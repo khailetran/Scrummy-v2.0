@@ -45,6 +45,10 @@ const App = () => {
       console.log("UPDATED STORAGE after clicking previous", storage[0])
     }
 
+    function onCurrentOnline(list){
+      console.log("UPDATED current online", list)
+    }
+
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -52,6 +56,7 @@ const App = () => {
     socket.on('delete-task', onDeleteTask);
     socket.on('next', onNext);
     socket.on('previous', onPrevious);
+    socket.on('current-online', onCurrentOnline);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -62,6 +67,7 @@ const App = () => {
       socket.off('delete-task', onDeleteTask);
       socket.off('next', onNext);
       socket.off('previous', onPrevious);
+      socket.off('current-online', onCurrentOnline);
     };
   }, []);
 
