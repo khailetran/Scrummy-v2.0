@@ -12,7 +12,9 @@ const io = socketIO(server, {
 });
 
 // temp storage to store tasks
-let storage = [[], [], [], []]
+let storage = [[[], [], [], []]]
+
+const boardInfo = [{ ID: uuidv4(), boardNumber: storage.length - 1 }]
 
 // list of names
 let anonNames = ['alligator', 'anteater', 'armadillo', 'auroch', 'axolotl', 'badger', 'bat', 'bear', 'beaver',
@@ -60,9 +62,10 @@ const generateUniqueAnonName = () => {
 app.use('/', express.static(path.join(__dirname, '../dist')));
 app.get('/', (req, res) => res.sendFile(__dirname, '../dist/index.html'));
 
+
 // SocketIO listeners
 // socket refers to the client
-// io refers this server
+// io refers to this server
 io.on('connection', (socket) => {
   // Create anonName upon client connection and store anonName in anonNamesObj
   let anonName;
@@ -94,7 +97,7 @@ io.on('connection', (socket) => {
     console.log(`A client has disconnected ${socket.id} with UPDATED anonNamesArr`, anonNamesArr);
   });
 
-  // Listener for the 'greeting-from-client'
+  // Listener for the 'add-task'
   socket.on('add-task', (content) => {
     // Assign a unique id for the task
     const uuid = uuidv4();
@@ -102,7 +105,6 @@ io.on('connection', (socket) => {
     //store it to the first index of storage (TO DO column)
     storage[0].push({ author: socket.id, content, uuid: uuid, anonName: anonName });
     io.emit('add-task', [{ author: socket.id, content, uuid: uuid, storage: storage, anonName: anonName }]);
-    // `User ${ socket.id } has sent ${ content } and its uuid is ${ uuidv4() } `);
   });
 
   //Listener for 'delete-message'
@@ -181,6 +183,18 @@ io.on('connection', (socket) => {
     }
     io.emit('previous', [{ uuid: uuid, storage: storage }]);
   })
-});
 
+
+  socket.on('new-board', () => {
+    const newBoard = [[], [], [], []];
+    boardInfo.push({
+      ID: uuidv4(),
+      boardNumber: storage.length - 1
+    })
+    storage.push(newBoard);
+    console.log(boardInfo)
+    console.log(boardInfo[storage.length - 1].ID);
+    io.emit('new-board', [boardInfo[storage.length - 1]])
+  })
+});
 server.listen(3000, () => console.log('The server is running at port 3000'));

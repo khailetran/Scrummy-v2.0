@@ -49,6 +49,10 @@ const App = () => {
       console.log("UPDATED current online", list)
     }
 
+    function onNewBoard(boardInfo){
+      console.log(boardInfo)
+    }
+
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
@@ -57,6 +61,7 @@ const App = () => {
     socket.on('next', onNext);
     socket.on('previous', onPrevious);
     socket.on('current-online', onCurrentOnline);
+    socket.on('new-board', onNewBoard);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
@@ -68,6 +73,7 @@ const App = () => {
       socket.off('next', onNext);
       socket.off('previous', onPrevious);
       socket.off('current-online', onCurrentOnline);
+      socket.off('new-board', onNewBoard);
     };
   }, []);
 
@@ -87,6 +93,10 @@ const App = () => {
     socket.emit('previous', uuid)
   }
 
+  function handleNewBoard() {
+    socket.emit('new-board')
+  }
+
   return (
     <>
       <div>App</div>
@@ -96,6 +106,7 @@ const App = () => {
         onChange={(e) => setInput(e.target.value)}
       />
       <button onClick={handleClick}>BUTTON</button>
+      <button onClick={() => handleNewBoard()}>New board</button>
       <ul>
         {tasks.map((task, index) => (
           <li key={index}>
