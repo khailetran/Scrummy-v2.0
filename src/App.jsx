@@ -113,6 +113,8 @@ const App = () => {
             header={HEADERS[i]}
             columnTasks={columnTasks}
             handleDeleteTask={handleDeleteTask}
+            disableLeft={i === 0}
+            disableRight={i === tasks.length - 1}
           />
         ))}
       </Board>
