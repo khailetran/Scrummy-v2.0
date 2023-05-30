@@ -49,9 +49,10 @@ const OnlineUsers = ({ onlineUsers, user }) => {
     <Container>
       <User>{hoveredUser}</User>
       <UserList>
-        {onlineUsers.map((name) => {
+        {onlineUsers.map((name, i) => {
           return (
             <UserIcon
+              key={`${name}_${i}`}
               onMouseEnter={() => setHoveredUser(name)}
               onMouseLeave={() => setHoveredUser(user)}
               style={{ backgroundColor: name === user ? '#FFA500' : '' }}
