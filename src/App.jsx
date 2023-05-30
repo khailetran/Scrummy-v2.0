@@ -10,6 +10,14 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 10px 10px;
+  background-color: #ffffff;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.05) 0.1em,
+      transparent 0.1em
+    ),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0.1em, transparent 0.1em);
+  background-size: 0.7em 0.7em;
+  border-bottom: 2px solid black;
 `;
 
 const Container = styled.div`

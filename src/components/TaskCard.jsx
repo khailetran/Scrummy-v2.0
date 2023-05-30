@@ -10,6 +10,12 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.05) 0.1em,
+      transparent 0.1em
+    ),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0.1em, transparent 0.1em);
+  background-size: 0.7em 0.7em;
 `;
 
 const ButtonContainer = styled.div`
