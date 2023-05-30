@@ -94,7 +94,9 @@ const App = () => {
   }
 
   function handleDeleteTask(uuid) {
-    socket.emit('delete-task', uuid);
+    console.log('deleting task:');
+    console.log(uuid);
+    // socket.emit('delete-task', uuid);
   }
 
   return (

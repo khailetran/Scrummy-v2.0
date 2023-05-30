@@ -8,7 +8,13 @@ const Header = styled.div`
   font-size: 2.2rem;
 `;
 
-const Column = ({ header, columnTasks, disableLeft, disableRight }) => {
+const Column = ({
+  header,
+  columnTasks,
+  handleDeleteTask,
+  disableLeft,
+  disableRight,
+}) => {
   return (
     <div>
       <Header>{header}</Header>
@@ -17,6 +23,7 @@ const Column = ({ header, columnTasks, disableLeft, disableRight }) => {
           <TaskCard
             key={task.uuid}
             {...task}
+            handleDeleteTask={handleDeleteTask}
             disableLeft={disableLeft}
             disableRight={disableRight}
           />
