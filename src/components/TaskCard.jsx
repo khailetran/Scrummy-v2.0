@@ -24,6 +24,15 @@ const Button = styled.button`
   box-shadow: 2px 2px black;
   padding: 0.25rem 0.5rem;
   border-radius: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 150ms;
+  transform: translate(-2px, -2px);
+  &:hover {
+    transform: translate(0px, 0px);
+    box-shadow: 0px 0px;
+  }
 `;
 
 const DeleteButton = styled.button`
@@ -46,8 +55,26 @@ const TaskCard = ({ uuid, author, content }) => {
       <span>{`~ ${author}`}</span>
 
       <ButtonContainer>
-        <Button>&larr;</Button>
-        <Button>&rarr;</Button>
+        <Button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24"
+            viewBox="0 -960 960 960"
+            width="24"
+          >
+            <path d="M360-200 80-480l280-280 42 42-208 208h686v60H194l208 208-42 42Z" />
+          </svg>
+        </Button>
+        <Button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="24"
+            viewBox="0 -960 960 960"
+            width="24"
+          >
+            <path d="m600-200-42-42 208-208H80v-60h686L558-718l42-42 280 280-280 280Z" />
+          </svg>
+        </Button>
         <DeleteButton>delete</DeleteButton>
       </ButtonContainer>
     </Card>
