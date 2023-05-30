@@ -43,6 +43,10 @@ module.exports = {
     ],
   },
 
+  resolve: {
+    extensions: ['.js', '.jsx'],
+  },
+
   devServer: {
     historyApiFallback: true,
     proxy: {
@@ -55,6 +59,6 @@ module.exports = {
   performance: {
     hints: false,
     maxEntrypointSize: 512000,
-    maxAssetSize: 512000
-  }
+    maxAssetSize: 512000,
+  },
 };
