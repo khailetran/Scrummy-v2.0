@@ -2,16 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { socket } from './socket';
 import styled from 'styled-components';
 import Column from './components/Column';
-
-const Title = styled.div`
-  color: blue;
-  background-color: lightblue;
-  padding: 3em;
-`;
+import CreateCard from './components/CreateCard';
 
 const Board = styled.div`
-  border: 1px solid black;
-  background-color: lightblue;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
 `;
@@ -30,10 +23,7 @@ const MOCK_DATA = [
 
 const App = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
-
   const [tasks, setTasks] = useState(MOCK_DATA);
-
-  const [input, setInput] = useState('');
 
   useEffect(() => {
     function onConnect() {
@@ -68,33 +58,30 @@ const App = () => {
     };
   }, []);
 
-  function handleClick() {
-    socket.emit('add-task', input);
+  function handleAddTask(content) {
+    console.log('adding task:');
+    console.log(content);
+    // socket.emit('add-task', content);
   }
 
-  function handleDelete(uuid) {
+  function handleDeleteTask(uuid) {
     socket.emit('delete-task', uuid);
   }
 
   return (
-    <>
-      <Title>App</Title>
-      <input
-        type="text"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-      <button onClick={handleClick}>BUTTON</button>
+    <main>
+      <CreateCard handleAddTask={handleAddTask} />
       <Board>
         {tasks.map((columnTasks, i) => (
           <Column
             key={`col_${i}`}
             header={HEADERS[i]}
             columnTasks={columnTasks}
+            handleDeleteTask={handleDeleteTask}
           />
         ))}
       </Board>
-    </>
+    </main>
   );
 };
 
