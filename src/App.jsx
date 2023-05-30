@@ -37,66 +37,125 @@ const Board = styled.div`
 
 const HEADERS = ['To Do', 'In Progress', 'Complete', 'Reviewed'];
 
-const MOCK_DATA = [
-  [
-    { uuid: 0, author: 'anna', content: 'make styled components work' },
-    { uuid: 1, author: 'scott', content: 'create mock data' },
-  ],
-  [{ uuid: 2, author: 'josh', content: 'make backend' }],
-  [],
-  [{ uuid: 3, author: 'derek', content: 'make backend with josh' }],
-];
-
-const MOCK_ONLINE_USERS = ['aardvark', `goldfish`, `zebra`, `penguin`];
-const MOCK_USER = 'aardvark';
-
 const App = () => {
-  const [isConnected, setIsConnected] = useState(socket.connected);
-  const [tasks, setTasks] = useState(MOCK_DATA);
-  const [allUsers, setAllUsers] = useState([]);
+  const [tasks, setTasks] = useState([[], [], [], []]);
+  const [allUsers, setAllUsers] = useState({});
   const [user, setUser] = useState();
 
   useEffect(() => {
-    function onConnect() {
-      setIsConnected(true);
-      // initialize:
-      // username
-      // allUsers
-      // board state
+    function onLoadTasks(tasks) {
+      console.log('ON LOAD TASKS');
+      console.log(tasks);
+      setTasks(() => tasks);
     }
 
-    function onDisconnect() {
-      setIsConnected(false);
-      // ?
+    function onUserConnected(usersObj) {
+      setAllUsers(usersObj);
+      setUser(usersObj[socket.id]);
     }
 
-    function onUserConnected(username) {
-      // add the user to allUsers
-    }
-
-    function onUserDisconnected(username) {
-      // remove the user from allUsers
+    function onUserDisconnected(socketId) {
+      setAllUsers((allUsers) => {
+        delete allUsers[socketId];
+        return allUsers;
+      });
     }
 
     function onAddTask(newTask) {
-      setTasks((tasks) => [...tasks, newTask]);
+      setTasks((tasks) => {
+        const newTasks = structuredClone(tasks);
+        newTasks[0].push(newTask);
+        return newTasks;
+      });
     }
 
     function onDeleteTask(uuid) {
-      setTasks((tasks) => tasks.filter((task) => task.uuid !== uuid));
+      setTasks((tasks) => {
+        let newTasks = structuredClone(tasks);
+        return newTasks.map((column) =>
+          column.filter((task) => task.uuid !== uuid)
+        );
+      });
     }
 
     function onMoveTaskLeft(uuid) {
-      // move the task left
+      setTasks((tasks) => {
+        let newTasks = structuredClone(tasks);
+        let foundTask = null;
+        let foundColumnIndex;
+        // find the task with the matching UUID and its current column index
+        for (let i = 0; i < newTasks.length; i++) {
+          // store current column
+          const column = newTasks[i];
+          // store index if uuid is found
+          const taskIndex = column.findIndex((task) => task.uuid === uuid);
+
+          // if match was found and in the last column (REVIEWED)...
+          if (taskIndex !== -1 && i == newTasks.length - 1) {
+            // remove the task at the specified index from the column array
+            foundTask = column.splice(taskIndex, 1)[0];
+            // delete the reviewer
+            delete foundTask.reviewedBy;
+            foundColumnIndex = i;
+            break;
+          }
+          // if match was found and not in the first column...store result and column index
+          else if (taskIndex !== -1 && i !== 0) {
+            // remove the task at the specified index from the column array
+            foundTask = column.splice(taskIndex, 1)[0];
+            foundColumnIndex = i;
+            break;
+          }
+        }
+        if (foundTask !== null) {
+          // push foundTask into previous column in storage
+          newTasks[foundColumnIndex - 1].push(foundTask);
+        }
+        return newTasks;
+      });
     }
 
-    function onMoveTaskRight(uuid) {
-      // move the task right
+    function onMoveTaskRight({ uuid, reviewerId }) {
+      setTasks((tasks) => {
+        let newTasks = structuredClone(tasks);
+        let foundTask = null;
+        let foundColumnIndex;
+        // find the task with the matching UUID and its current column index
+        for (let i = 0; i < newTasks.length; i++) {
+          // store current column
+          const column = newTasks[i];
+          // store index if uuid is found
+          const taskIndex = column.findIndex((task) => task.uuid === uuid);
+
+          // if match was found and in the 2nd to last column (COMPLETE)...
+          if (taskIndex !== -1 && i === newTasks.length - 2) {
+            // remove the task at the specified index from the column array
+            foundTask = column.splice(taskIndex, 1)[0];
+            // create a current reviewer in storage
+            console.log('##### REVIEWED BY ######');
+            console.log(reviewerId);
+            foundTask.reviewedBy = allUsers[reviewerId];
+            foundColumnIndex = i;
+            break;
+          }
+          // if match was found and not in the last column...
+          else if (taskIndex !== -1 && i !== newTasks.length - 1) {
+            // remove the task at the specified index from the column array
+            foundTask = column.splice(taskIndex, 1)[0];
+            foundColumnIndex = i;
+            break;
+          }
+        }
+        if (foundTask !== null) {
+          // push foundTask into next column in storage
+          newTasks[foundColumnIndex + 1].push(foundTask);
+        }
+        return newTasks;
+      });
     }
 
     // Register event listeners
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
+    socket.on('load-tasks', onLoadTasks);
     socket.on('user-connected', onUserConnected);
     socket.on('user-disconnected', onUserDisconnected);
     socket.on('add-task', onAddTask);
@@ -107,8 +166,7 @@ const App = () => {
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
     return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
+      socket.off('load-tasks', onLoadTasks);
       socket.off('user-connected', onUserConnected);
       socket.off('user-disconnected', onUserDisconnected);
       socket.off('add-task', onAddTask);
@@ -116,26 +174,22 @@ const App = () => {
       socket.off('move-task-left', onMoveTaskLeft);
       socket.off('move-task-right', onMoveTaskRight);
     };
-  }, []);
+  }, [allUsers]);
 
   function handleAddTask(content) {
-    console.log('adding task:');
-    console.log(content);
-    // socket.emit('add-task', content);
+    socket.emit('add-task', content);
   }
 
   function handleDeleteTask(uuid) {
-    console.log('deleting task:');
-    console.log(uuid);
-    // socket.emit('delete-task', uuid);
+    socket.emit('delete-task', uuid);
   }
 
   function handleMoveTaskLeft(uuid) {
-    console.log('move task left');
+    socket.emit('move-task-left', uuid);
   }
 
   function handleMoveTaskRight(uuid) {
-    console.log('move task right');
+    socket.emit('move-task-right', uuid);
   }
 
   return (
@@ -145,7 +199,7 @@ const App = () => {
           <Title>Scrummy</Title>
           <CreateCard handleAddTask={handleAddTask} />
         </Container>
-        <OnlineUsers onlineUsers={MOCK_ONLINE_USERS} user={MOCK_USER} />
+        <OnlineUsers onlineUsers={Object.values(allUsers)} user={user} />
       </Header>
       <Board>
         {tasks.map((columnTasks, i) => (
@@ -154,6 +208,8 @@ const App = () => {
             header={HEADERS[i]}
             columnTasks={columnTasks}
             handleDeleteTask={handleDeleteTask}
+            handleMoveTaskLeft={handleMoveTaskLeft}
+            handleMoveTaskRight={handleMoveTaskRight}
             disableLeft={i === 0}
             disableRight={i === tasks.length - 1}
           />

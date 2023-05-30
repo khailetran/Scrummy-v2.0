@@ -12,6 +12,8 @@ const Column = ({
   header,
   columnTasks,
   handleDeleteTask,
+  handleMoveTaskLeft,
+  handleMoveTaskRight,
   disableLeft,
   disableRight,
 }) => {
@@ -24,6 +26,8 @@ const Column = ({
             key={task.uuid}
             {...task}
             handleDeleteTask={handleDeleteTask}
+            handleMoveTaskLeft={handleMoveTaskLeft}
+            handleMoveTaskRight={handleMoveTaskRight}
             disableLeft={disableLeft}
             disableRight={disableRight}
           />

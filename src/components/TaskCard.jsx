@@ -58,24 +58,39 @@ const DeleteButton = styled.button`
   }
 `;
 
+const Name = styled.span`
+  font-family: 'Abril Fatface', cursive;
+  font-size: 1rem;
+`;
+
 const TaskCard = ({
   uuid,
   author,
   content,
+  reviewedBy,
   handleDeleteTask,
+  handleMoveTaskLeft,
+  handleMoveTaskRight,
   disableLeft = false,
   disableRight = false,
 }) => {
   return (
     <Card>
       <span>{content}</span>
-      <span>{`~ ${author}`}</span>
+      <div>
+        <span>author:&nbsp;</span>
+        <Name>{author}</Name>
+      </div>
+
+      {reviewedBy && (
+        <div>
+          <span>reviewed by:&nbsp;</span>
+          <Name>{reviewedBy}</Name>
+        </div>
+      )}
 
       <ButtonContainer>
-        <Button
-          disabled={disableLeft}
-          onClick={() => console.log('clicked left')}
-        >
+        <Button disabled={disableLeft} onClick={() => handleMoveTaskLeft(uuid)}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="24"
@@ -87,7 +102,7 @@ const TaskCard = ({
         </Button>
         <Button
           disabled={disableRight}
-          onClick={() => console.log('clicked right')}
+          onClick={() => handleMoveTaskRight(uuid)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
