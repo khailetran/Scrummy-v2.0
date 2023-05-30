@@ -10,6 +10,12 @@ const Card = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.05) 0.1em,
+      transparent 0.1em
+    ),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0.1em, transparent 0.1em);
+  background-size: 0.7em 0.7em;
 `;
 
 const ButtonContainer = styled.div`
@@ -29,9 +35,13 @@ const Button = styled.button`
   justify-content: center;
   transition: all 150ms;
   transform: translate(-2px, -2px);
-  &:hover {
+  &:hover:not([disabled]) {
     transform: translate(0px, 0px);
     box-shadow: 0px 0px;
+  }
+  &:disabled {
+    cursor: not-allowed;
+    background-color: #d1d5db;
   }
 `;
 
@@ -48,14 +58,24 @@ const DeleteButton = styled.button`
   }
 `;
 
-const TaskCard = ({ uuid, author, content }) => {
+const TaskCard = ({
+  uuid,
+  author,
+  content,
+  handleDeleteTask,
+  disableLeft = false,
+  disableRight = false,
+}) => {
   return (
     <Card>
       <span>{content}</span>
       <span>{`~ ${author}`}</span>
 
       <ButtonContainer>
-        <Button>
+        <Button
+          disabled={disableLeft}
+          onClick={() => console.log('clicked left')}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="24"
@@ -65,7 +85,10 @@ const TaskCard = ({ uuid, author, content }) => {
             <path d="M360-200 80-480l280-280 42 42-208 208h686v60H194l208 208-42 42Z" />
           </svg>
         </Button>
-        <Button>
+        <Button
+          disabled={disableRight}
+          onClick={() => console.log('clicked right')}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             height="24"
@@ -75,7 +98,9 @@ const TaskCard = ({ uuid, author, content }) => {
             <path d="m600-200-42-42 208-208H80v-60h686L558-718l42-42 280 280-280 280Z" />
           </svg>
         </Button>
-        <DeleteButton>delete</DeleteButton>
+        <DeleteButton onClick={() => handleDeleteTask(uuid)}>
+          delete
+        </DeleteButton>
       </ButtonContainer>
     </Card>
   );

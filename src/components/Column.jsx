@@ -8,13 +8,25 @@ const Header = styled.div`
   font-size: 2.2rem;
 `;
 
-const Column = ({ header, columnTasks }) => {
+const Column = ({
+  header,
+  columnTasks,
+  handleDeleteTask,
+  disableLeft,
+  disableRight,
+}) => {
   return (
     <div>
       <Header>{header}</Header>
       <div>
         {columnTasks.map((task) => (
-          <TaskCard key={task.uuid} {...task} />
+          <TaskCard
+            key={task.uuid}
+            {...task}
+            handleDeleteTask={handleDeleteTask}
+            disableLeft={disableLeft}
+            disableRight={disableRight}
+          />
         ))}
       </div>
     </div>

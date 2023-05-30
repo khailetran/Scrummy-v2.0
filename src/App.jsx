@@ -10,6 +10,14 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 10px 10px;
+  background-color: #ffffff;
+  background-image: linear-gradient(
+      rgba(0, 0, 0, 0.05) 0.1em,
+      transparent 0.1em
+    ),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0.1em, transparent 0.1em);
+  background-size: 0.7em 0.7em;
+  border-bottom: 2px solid black;
 `;
 
 const Container = styled.div`
@@ -45,14 +53,29 @@ const MOCK_USER = 'aardvark';
 const App = () => {
   const [isConnected, setIsConnected] = useState(socket.connected);
   const [tasks, setTasks] = useState(MOCK_DATA);
+  const [allUsers, setAllUsers] = useState([]);
+  const [user, setUser] = useState();
 
   useEffect(() => {
     function onConnect() {
       setIsConnected(true);
+      // initialize:
+      // username
+      // allUsers
+      // board state
     }
 
     function onDisconnect() {
       setIsConnected(false);
+      // ?
+    }
+
+    function onUserConnected(username) {
+      // add the user to allUsers
+    }
+
+    function onUserDisconnected(username) {
+      // remove the user from allUsers
     }
 
     function onAddTask(newTask) {
@@ -63,19 +86,35 @@ const App = () => {
       setTasks((tasks) => tasks.filter((task) => task.uuid !== uuid));
     }
 
+    function onMoveTaskLeft(uuid) {
+      // move the task left
+    }
+
+    function onMoveTaskRight(uuid) {
+      // move the task right
+    }
+
     // Register event listeners
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
+    socket.on('user-connected', onUserConnected);
+    socket.on('user-disconnected', onUserDisconnected);
     socket.on('add-task', onAddTask);
     socket.on('delete-task', onDeleteTask);
+    socket.on('move-task-left', onMoveTaskLeft);
+    socket.on('move-task-right', onMoveTaskRight);
 
     // Clean up the event listeners when the component unmounts
     // (prevents duplicate event registration)
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
+      socket.off('user-connected', onUserConnected);
+      socket.off('user-disconnected', onUserDisconnected);
       socket.off('add-task', onAddTask);
       socket.off('delete-task', onDeleteTask);
+      socket.off('move-task-left', onMoveTaskLeft);
+      socket.off('move-task-right', onMoveTaskRight);
     };
   }, []);
 
@@ -86,7 +125,17 @@ const App = () => {
   }
 
   function handleDeleteTask(uuid) {
-    socket.emit('delete-task', uuid);
+    console.log('deleting task:');
+    console.log(uuid);
+    // socket.emit('delete-task', uuid);
+  }
+
+  function handleMoveTaskLeft(uuid) {
+    console.log('move task left');
+  }
+
+  function handleMoveTaskRight(uuid) {
+    console.log('move task right');
   }
 
   return (
@@ -105,6 +154,8 @@ const App = () => {
             header={HEADERS[i]}
             columnTasks={columnTasks}
             handleDeleteTask={handleDeleteTask}
+            disableLeft={i === 0}
+            disableRight={i === tasks.length - 1}
           />
         ))}
       </Board>
